@@ -1,10 +1,12 @@
 package com.example.demo.controllers;
 
+import java.util.Base64;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -17,6 +19,9 @@ import com.example.demo.model.persistence.User;
 import com.example.demo.model.persistence.repositories.CartRepository;
 import com.example.demo.model.persistence.repositories.UserRepository;
 import com.example.demo.model.requests.CreateUserRequest;
+import java.security.SecureRandom;
+
+
 
 @RestController
 @RequestMapping("/api/user")
@@ -27,6 +32,8 @@ public class UserController {
 	
 	@Autowired
 	private CartRepository cartRepository;
+	@Autowired
+	private BCryptPasswordEncoder bCryptPasswordEncoder;
 
 	@GetMapping("/id/{id}")
 	public ResponseEntity<User> findById(@PathVariable Long id) {
@@ -38,16 +45,27 @@ public class UserController {
 		User user = userRepository.findByUsername(username);
 		return user == null ? ResponseEntity.notFound().build() : ResponseEntity.ok(user);
 	}
-	
 	@PostMapping("/create")
 	public ResponseEntity<User> createUser(@RequestBody CreateUserRequest createUserRequest) {
+		String salt = generateSalt();
 		User user = new User();
 		user.setUsername(createUserRequest.getUsername());
+		user.setPassword(createUserRequest.getPassword());
+		user.setSalt(salt);
 		Cart cart = new Cart();
 		cartRepository.save(cart);
 		user.setCart(cart);
-		userRepository.save(user);
-		return ResponseEntity.ok(user);
+		if (createUserRequest.getPassword() != null && createUserRequest.getPassword().equals(createUserRequest.getConfirmPassword())) {
+			user.setPassword(bCryptPasswordEncoder.encode(createUserRequest.getPassword().concat(salt)));
+			userRepository.save(user);
+			return ResponseEntity.ok(user);
+		} else return ResponseEntity.badRequest().build();
+	}
+	private String generateSalt(){
+		SecureRandom secureRandom = new SecureRandom();
+		byte[] salt = new byte[16];
+		secureRandom.nextBytes(salt);
+		return Base64.getEncoder().encodeToString(salt);
 	}
 	
 }

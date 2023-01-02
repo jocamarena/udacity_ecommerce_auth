@@ -29,8 +29,11 @@ public class User {
 	private String username;
 
 	@Column(nullable = false)
-	@JsonProperty
+	@JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
 	private String password;
+	@Column(nullable = false)
+	@JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
+	private String salt;
 	
 	@OneToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "cart_id", referencedColumnName = "id")
@@ -67,5 +70,14 @@ public class User {
 
 	public void setPassword(String password) {
 		this.password = password;
+	}
+
+
+	public String getSalt() {
+		return salt;
+	}
+
+	public void setSalt(String salt) {
+		this.salt = salt;
 	}
 }
