@@ -12,9 +12,11 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.junit4.SpringRunner;
 import sun.net.www.http.HttpClient;
 
-@RunWith(SpringRunner.class)
-@SpringBootTest(classes = SareetaApplication.class)
+//@RunWith(SpringRunner.class)
+//@SpringBootTest(classes = SareetaApplication.class)
+@SpringBootTest
 public class SareetaApplicationTests {
+
 	@Test
 	public void contextLoads() {
 	}
